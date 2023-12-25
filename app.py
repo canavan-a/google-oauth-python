@@ -9,29 +9,29 @@ app = Flask(__name__)
 
 load_dotenv()
 
-app.secret_key = "secret shhh"
+app.config['GLOBAL_MAP'] = {}
 
-# Replace these values with your own
+def set_value(key, value):
+    # Set a value in the global map stored in app.config
+    app.config['GLOBAL_MAP'][key] = value
+
+def get_value(key):
+    # Get a value from the global map stored in app.config
+    return app.config['GLOBAL_MAP'].get(key)
+
 GOOGLE_CLIENT_ID = os.environ.get('CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
 GOOGLE_REDIRECT_URI = "http://localhost:5000/red"
 
-# Set up the OAuth 2.0 flow
-flow = Flow.from_client_secrets_file(
-    'client_secret.json',
-    scopes=['openid', 'profile', 'email'],
-    redirect_uri=GOOGLE_REDIRECT_URI
-)
-
 @app.route('/')
 def root_route():
-    if 'google_token' in session:
-        # User is already authenticated
-        return 'Logged in!'
-    else:
-        # Redirect to Google's OAuth endpoint
-        authorization_url, _ = flow.authorization_url(prompt='consent')
-        return redirect(authorization_url)
+    
+    # get cookie and see if there is an active session
+    # if not do google auth flow
+    
+    authorization_url = f'''https://accounts.google.com/o/oauth2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_REDIRECT_URI}&response_type=code&scope=openid+profile+email&state=your_random_state&prompt=consent'''
+    # authorization_url, _ = flow.authorization_url(prompt='consent')
+    return redirect(authorization_url)
 
 @app.route('/red')
 def redirect_route():
@@ -69,9 +69,6 @@ def redirect_route():
         # Print or use user information as needed
         print('User Info:', user_info)
 
-        # Store the token and user information in the session
-        session['google_token'] = access_token
-        session['user_info'] = user_info
 
         return jsonify(user_info)
     else:
@@ -79,15 +76,6 @@ def redirect_route():
 
     return 'you have been redirected'
 
-@app.route('/test')
-def test_route():
-    username = session.get('username', 'Guest')
-    return f'Hello, {username}!'
-
-@app.route('/gang')
-def gang_route():
-    
-    return 'Hello, gang!'
 
 if __name__ == '__main__':
     app.run(debug=True)
