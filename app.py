@@ -23,10 +23,14 @@ def get_value(key):
 GOOGLE_CLIENT_ID = os.environ.get('CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
 GOOGLE_REDIRECT_URI = "http://localhost:5000/red"
-LANDING_URL = "https://picstone-generative-ai.vercel.app/"
+LANDING_URL = "http://localhost:5000"# "https://picstone-generative-ai.vercel.app/"
+
+@app.route('/')
+def root_route():
+    return "Hello World", 200
 
 @app.route('/get_google_oauth_link')
-def root_route():
+def google_route():
     
     # get cookie and see if there is an active session
     session_token = request.cookies.get('session_token')
